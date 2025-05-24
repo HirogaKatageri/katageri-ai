@@ -1,0 +1,19 @@
+name: sparrow_clients
+description: AI Clients for the Sparrow AI Framework
+version: 0.0.1
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.8.0
+
+# Add regular dependencies here.
+dependencies:
+  dio: ^5.8.0+1
+  json_annotation: ^4.9.0
+  # path: ^1.8.0
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  json_serializable: ^6.9.5
+  lints: ^6.0.0
+  test: ^1.24.0
