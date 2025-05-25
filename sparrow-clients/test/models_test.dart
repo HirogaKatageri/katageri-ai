@@ -47,46 +47,53 @@ void main() {
 
       // Parse the JSON
       final json = jsonDecode(jsonString);
-      
+
       // Create a GeminiResponse object from the JSON
       final response = GeminiResponse.fromJson(json);
-      
+
       // Verify the parsed data
-      expect(response.candidates.length, 1);
+      expect(response.candidates, isNotNull);
+      expect(response.candidates!.length, 1);
       expect(response.modelVersion, 'gemini-2.0-flash');
       expect(response.responseId, 'P8wyaMSrC4yR7dcP5ZWZ2Ac');
-      
+
       // Verify the first candidate
-      final candidate = response.candidates[0];
+      final candidate = response.candidates![0];
       expect(candidate.finishReason, 'STOP');
       expect(candidate.avgLogprobs, -0.2799620793845213);
-      
+
       // Verify the content
-      final content = candidate.content;
+      expect(candidate.content, isNotNull);
+      final content = candidate.content!;
       expect(content.role, 'model');
-      expect(content.parts.length, 1);
-      
+      expect(content.parts, isNotNull);
+      expect(content.parts!.length, 1);
+
       // Verify the first part
-      final part = content.parts[0];
-      expect(part.text.startsWith('The Philippines, officially the Republic of the Philippines'), true);
-      
+      final part = content.parts![0];
+      expect(part.text, isNotNull);
+      expect(part.text!.startsWith('The Philippines, officially the Republic of the Philippines'), true);
+
       // Verify the usage metadata
-      final usageMetadata = response.usageMetadata;
+      expect(response.usageMetadata, isNotNull);
+      final usageMetadata = response.usageMetadata!;
       expect(usageMetadata.promptTokenCount, 5);
       expect(usageMetadata.candidatesTokenCount, 1239);
       expect(usageMetadata.totalTokenCount, 1244);
-      expect(usageMetadata.promptTokensDetails.length, 1);
-      expect(usageMetadata.candidatesTokensDetails.length, 1);
-      
+      expect(usageMetadata.promptTokensDetails, isNotNull);
+      expect(usageMetadata.promptTokensDetails!.length, 1);
+      expect(usageMetadata.candidatesTokensDetails, isNotNull);
+      expect(usageMetadata.candidatesTokensDetails!.length, 1);
+
       // Verify the tokens details
-      final promptTokensDetails = usageMetadata.promptTokensDetails[0];
+      final promptTokensDetails = usageMetadata.promptTokensDetails![0];
       expect(promptTokensDetails.modality, 'TEXT');
       expect(promptTokensDetails.tokenCount, 5);
-      
-      final candidatesTokensDetails = usageMetadata.candidatesTokensDetails[0];
+
+      final candidatesTokensDetails = usageMetadata.candidatesTokensDetails![0];
       expect(candidatesTokensDetails.modality, 'TEXT');
       expect(candidatesTokensDetails.tokenCount, 1239);
-      
+
       // Test serialization back to JSON
       final serializedJson = response.toJson();
       expect(serializedJson['modelVersion'], 'gemini-2.0-flash');

@@ -1,130 +1,85 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:sparrow_clients/sparrow-clients.dart';
 import 'package:test/test.dart';
-import 'package:dio/dio.dart';
 
-void main() {
-  group('OpenAiClient', () {
-    test('should initialize with correct configuration', () {
-      final client = OpenAiClient(apiKey: 'test-key');
+// Manual mock for SparrowHttpClient
+class MockSparrowHttpClient implements SparrowHttpClient {
+  @override
+  final String host;
 
-      expect(client.apiKey, equals('test-key'));
-      expect(client.dio, isA<Dio>());
-      expect(client.dio!.options.baseUrl, equals('https://api.openai.com/'));
-      expect(client.dio!.options.headers['Authorization'], equals('Bearer test-key'));
-      expect(client.dio!.options.headers['Content-Type'], equals('application/json'));
-    });
+  @override
+  final String? parent;
 
-    test('textPrompt should handle DioException', () async {
-      // Arrange
-      final mockDio = Dio();
-      final client = OpenAiClient(apiKey: 'test-key', dio: mockDio);
+  @override
+  final Map<String, String> headers;
 
-      mockDio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            // Simulate a network error
-            handler.reject(
-              DioException(
-                requestOptions: options,
-                error: 'Network error',
-                type: DioExceptionType.connectionError,
-              ),
-            );
-          },
-        ),
-      );
+  @override
+  final http.Client client = http.Client();
 
-      // Act
-      final result = await client.textPrompt(input: 'Test input');
+  @override
+  bool isDisposed = false;
 
-      // Assert
-      expect(result, isNull);
-    });
-
-    test('textPrompt should return response data on success', () async {
-      // Arrange
-      final mockDio = Dio();
-      final client = OpenAiClient(apiKey: 'test-key', dio: mockDio);
-
-      final responseData = {
-        'id': 'resp-123',
-        'choices': [
-          {
-            'message': {
-              'content': 'Hello there!',
-            }
-          }
-        ]
-      };
-
-      mockDio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            // Return a successful response
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                data: responseData,
-                statusCode: 200,
-              ),
-            );
-          },
-        ),
-      );
-
-      // Act
-      final result = await client.textPrompt(input: 'Hello');
-
-      // Assert
-      expect(result, isNotNull);
-      final resultJson = json.decode(result!);
-      expect(resultJson, equals(responseData));
-    });
+  MockSparrowHttpClient({
+    this.host = 'test-host',
+    this.parent = '/test-parent',
+    this.headers = const {},
   });
 
+  Function(String path, Object? body, Map<String, String>? queryParams)? onPost;
+  http.Response? postResponse;
+  Exception? postException;
+
+  @override
+  Future<http.Response> post({
+    required String path,
+    Object? body,
+    Map<String, String>? headers,
+    Map<String, String>? queryParams,
+  }) async {
+    if (onPost != null) {
+      onPost!(path, body, queryParams);
+    }
+
+    if (postException != null) {
+      throw postException!;
+    }
+
+    return postResponse ?? http.Response('', 200);
+  }
+
+  @override
+  void dispose() {
+    client.close();
+    isDisposed = true;
+  }
+}
+
+void main() {
   group('GeminiClient', () {
     test('should initialize with correct configuration', () {
       final client = GeminiClient(apiKey: 'test-key');
 
       expect(client.apiKey, equals('test-key'));
-      expect(client.dio, isA<Dio>());
-      expect(client.dio!.options.baseUrl, equals('https://generativelanguage.googleapis.com/v1beta/models/'));
-      expect(client.dio!.options.headers['Content-Type'], equals('application/json'));
+      expect(client.client, isA<SparrowHttpClient>());
+      expect(client.client.host, equals('generativelanguage.googleapis.com'));
+      expect(client.client.parent, equals('/v1beta/models'));
     });
 
-    test('textPrompt should handle DioException', () async {
+    test('textPrompt should handle exceptions', () async {
       // Arrange
-      final mockDio = Dio();
-      final client = GeminiClient(apiKey: 'test-key', dio: mockDio);
+      final mockClient = MockSparrowHttpClient();
+      mockClient.postException = Exception('Network error');
+      final client = GeminiClient(apiKey: 'test-key', client: mockClient);
 
-      mockDio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            // Simulate a network error
-            handler.reject(
-              DioException(
-                requestOptions: options,
-                error: 'Network error',
-                type: DioExceptionType.connectionError,
-              ),
-            );
-          },
-        ),
-      );
-
-      // Act
-      final result = await client.textPrompt(input: 'Test input');
-
-      // Assert
-      expect(result, isNull);
+      // Act & Assert
+      expect(() => client.textPrompt(input: 'Test input'), throwsException);
     });
 
-    test('textPrompt should return response data on success', () async {
+    test('textPrompt should return GeminiResponse on success', () async {
       // Arrange
-      final mockDio = Dio();
-      final client = GeminiClient(apiKey: 'test-key', dio: mockDio);
+      final mockClient = MockSparrowHttpClient();
+      final client = GeminiClient(apiKey: 'test-key', client: mockClient);
 
       final responseData = {
         'candidates': [
@@ -134,34 +89,115 @@ void main() {
                 {
                   'text': 'Hello there!'
                 }
-              ]
-            }
+              ],
+              'role': 'model'
+            },
+            'finishReason': 'STOP',
+            'avgLogprobs': -0.5
           }
-        ]
+        ],
+        'modelVersion': 'gemini-2.0-flash',
+        'responseId': 'test-id',
+        'usageMetadata': {
+          'promptTokenCount': 5,
+          'candidatesTokenCount': 10,
+          'totalTokenCount': 15,
+          'promptTokensDetails': [
+            {
+              'modality': 'TEXT',
+              'tokenCount': 5
+            }
+          ],
+          'candidatesTokensDetails': [
+            {
+              'modality': 'TEXT',
+              'tokenCount': 10
+            }
+          ]
+        }
       };
 
-      mockDio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            // Return a successful response
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                data: responseData,
-                statusCode: 200,
-              ),
-            );
-          },
-        ),
+      mockClient.postResponse = http.Response(
+        jsonEncode(responseData),
+        200,
       );
 
       // Act
       final result = await client.textPrompt(input: 'Hello');
 
       // Assert
-      expect(result, isNotNull);
-      final resultJson = json.decode(result!);
-      expect(resultJson, equals(responseData));
+      expect(result, isA<GeminiResponse>());
+      expect(result.candidates, isNotNull);
+      expect(result.candidates!.length, equals(1));
+      expect(result.candidates![0].content, isNotNull);
+      expect(result.candidates![0].content!.parts, isNotNull);
+      expect(result.candidates![0].content!.parts!.length, equals(1));
+      expect(result.candidates![0].content!.parts![0].text, equals('Hello there!'));
+      expect(result.modelVersion, equals('gemini-2.0-flash'));
+      expect(result.responseId, equals('test-id'));
+    });
+
+    test('textPrompt should handle streaming response', () async {
+      // Arrange
+      final mockClient = MockSparrowHttpClient();
+      final client = GeminiClient(apiKey: 'test-key', client: mockClient);
+
+      final responseData = {
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {
+                  'text': 'Hello there!'
+                }
+              ],
+              'role': 'model'
+            },
+            'finishReason': 'STOP',
+            'avgLogprobs': -0.5
+          }
+        ],
+        'modelVersion': 'gemini-2.0-flash',
+        'responseId': 'test-id',
+        'usageMetadata': {
+          'promptTokenCount': 5,
+          'candidatesTokenCount': 10,
+          'totalTokenCount': 15,
+          'promptTokensDetails': [
+            {
+              'modality': 'TEXT',
+              'tokenCount': 5
+            }
+          ],
+          'candidatesTokensDetails': [
+            {
+              'modality': 'TEXT',
+              'tokenCount': 10
+            }
+          ]
+        }
+      };
+
+      mockClient.postResponse = http.Response(
+        'data: ${jsonEncode(responseData)}',
+        200,
+      );
+
+      // Act
+      final result = await client.textPrompt(input: 'Hello');
+
+      // Assert
+      expect(result, isA<GeminiResponse>());
+      expect(result.candidates, isNotNull);
+      expect(result.candidates!.length, equals(1));
+      expect(result.candidates![0].content, isNotNull);
+      expect(result.candidates![0].content!.parts, isNotNull);
+      expect(result.candidates![0].content!.parts!.length, equals(1));
+      expect(result.candidates![0].content!.parts![0].text, equals('Hello there!'));
+      expect(result.modelVersion, equals('gemini-2.0-flash'));
+      expect(result.responseId, equals('test-id'));
     });
   });
+
+  // OpenAiClient tests are removed as the implementation is currently inactive
 }
