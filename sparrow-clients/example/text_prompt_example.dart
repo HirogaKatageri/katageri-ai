@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:sparrow_clients/clients.dart';
+import 'package:sparrow_clients/sparrow-clients.dart';
 
 void main() async {
-  final client = GeminiClient(
-    apiKey: Platform.environment['GEMINI_API_KEY']!,
+  final client = GeminiClient(apiKey: Platform.environment['GEMINI_API_KEY']!);
+
+  final GeminiResponse response = await client.textPrompt(
+    input: 'Tell me about the Philippines',
   );
 
-  final result = await client.textPrompt(input: 'Hi!');
-
-  print(result);
+  print(response.candidates?.firstOrNull?.content?.parts?.firstOrNull?.text);
 }

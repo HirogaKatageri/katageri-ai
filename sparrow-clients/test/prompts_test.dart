@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:sparrow_clients/clients.dart';
+import 'package:sparrow_clients/sparrow-clients.dart';
 import 'package:test/test.dart';
 
 void main() {

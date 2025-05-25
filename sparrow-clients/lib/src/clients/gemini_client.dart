@@ -1,44 +1,41 @@
-part of 'clients_base.dart';
+part of 'base_client.dart';
 
 class GeminiClient extends BaseAiClient {
-  static const String geminiAiBaseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/';
+  static const String host = 'generativelanguage.googleapis.com';
+  static const String parent = '/v1beta/models';
 
   static const String defaultGeminiModel = 'gemini-2.0-flash';
 
-  GeminiClient({required this.apiKey, Dio? dio})
-    : super(
-        dio:
-            dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: geminiAiBaseUrl,
-                headers: {Headers.contentTypeHeader: Headers.jsonContentType},
-              ),
-            ),
-      );
+  GeminiClient({required this.apiKey, SparrowHttpClient? client}) {
+    super.client =
+        client ??
+        SparrowHttpClient(
+          host: host,
+          parent: parent,
+          headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+        );
+  }
 
   final String apiKey;
 
   @override
-  Future<String?> textPrompt({
+  Future<GeminiResponse> textPrompt({
     required String input,
     String model = defaultGeminiModel,
     String? instructions,
   }) async {
-    try {
-      final result = await GeminiPrompt(
-        model: model,
-        input: input,
-        apiKey: apiKey,
-        instructions: instructions,
-      ).invoke(dio);
+    final response = await GeminiPrompt(
+      model: model,
+      input: input,
+      apiKey: apiKey,
+      instructions: instructions,
+      stream: true,
+    ).invoke(client);
 
-      return jsonEncode(result.data);
-    } on DioException catch (e) {
-      logDioException(e);
-    }
+    final body = response.body.startsWith('data: ')
+        ? response.body.substring(6).trim()
+        : response.body;
 
-    return null;
+    return GeminiResponse.fromJson(jsonDecode(body));
   }
 }
