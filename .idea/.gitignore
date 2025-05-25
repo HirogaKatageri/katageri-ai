@@ -1,6 +1,10 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+# Misc
+/misc.xml
+
 # Editor-based HTTP Client requests
 /httpRequests/
 # Environment-dependent path to Maven home directory
@@ -8,3 +12,13 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# Dart references
+/libraries/**
+
+# Aws references
+/aws.xml
+
+# IntelliJ Material Theme
+/material_theme_project_new.xml
+

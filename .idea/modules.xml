@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/cli/cli.iml" filepath="$PROJECT_DIR$/cli/cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sparrow-ai.iml" filepath="$PROJECT_DIR$/.idea/sparrow-ai.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sparrow-clients/sparrow-clients.iml" filepath="$PROJECT_DIR$/sparrow-clients/sparrow-clients.iml" />
+    </modules>
+  </component>
+</project>
