@@ -1,24 +1,16 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'dart:convert';
 
-part 'prompts.g.dart';
+import 'package:dio/dio.dart';
+
+part 'gemini_prompts.dart';
+part 'open_ai_prompts.dart';
 
 sealed class Prompt {
-  Prompt({required this.model});
+  Prompt({required this.model, required this.input, this.instructions});
 
-  @JsonKey(name: 'model')
   final String model;
-}
-
-@JsonSerializable()
-class OpenAiTextPrompt extends Prompt {
-  OpenAiTextPrompt({
-    required super.model,
-    required this.input,
-    this.instructions,
-  });
-
-  final String? instructions;
   final String input;
+  final String? instructions;
 
-  Map<String, dynamic> toJson() => _$OpenAiTextPromptToJson(this);
+  Future<Response<T>> invoke<T>(Dio dio);
 }

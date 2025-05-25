@@ -1,20 +1,19 @@
 part of 'clients_base.dart';
 
-class OpenAiClient extends BaseAiClient {
-  static const String openAiBaseUrl = 'https://api.openai.com/';
-  static const String defaultOpenAiModel = 'gpt-4.1-nano';
+class GeminiClient extends BaseAiClient {
+  static const String geminiAiBaseUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/';
 
-  OpenAiClient({required this.apiKey, Dio? dio})
+  static const String defaultGeminiModel = 'gemini-2.0-flash';
+
+  GeminiClient({required this.apiKey, Dio? dio})
     : super(
         dio:
             dio ??
             Dio(
               BaseOptions(
-                baseUrl: openAiBaseUrl,
-                headers: {
-                  Headers.contentTypeHeader: Headers.jsonContentType,
-                  'Authorization': 'Bearer $apiKey',
-                },
+                baseUrl: geminiAiBaseUrl,
+                headers: {Headers.contentTypeHeader: Headers.jsonContentType},
               ),
             ),
       );
@@ -24,13 +23,14 @@ class OpenAiClient extends BaseAiClient {
   @override
   Future<String?> textPrompt({
     required String input,
-    String model = defaultOpenAiModel,
+    String model = defaultGeminiModel,
     String? instructions,
   }) async {
     try {
-      final result = await OpenAiPrompt(
+      final result = await GeminiPrompt(
         model: model,
         input: input,
+        apiKey: apiKey,
         instructions: instructions,
       ).invoke(dio);
 

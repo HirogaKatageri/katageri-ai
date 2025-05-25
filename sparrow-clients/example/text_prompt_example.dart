@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:sparrow_clients/clients.dart';
 
 void main() async {
-  final OpenAiClient client = OpenAiClient(
-    apiKey: Platform.environment['OPENAI_API_KEY']!,
+  final client = GeminiClient(
+    apiKey: Platform.environment['GEMINI_API_KEY']!,
   );
 
-  await client.sendMessage(input: 'Hi');
+  final result = await client.textPrompt(input: 'Hi!');
+
+  print(result);
 }

@@ -16,7 +16,7 @@ void main() {
       expect(client.dio!.options.headers['Content-Type'], equals('application/json'));
     });
 
-    test('sendMessage should handle DioException', () async {
+    test('textPrompt should handle DioException', () async {
       // Arrange
       final mockDio = Dio();
       final client = OpenAiClient(apiKey: 'test-key', dio: mockDio);
@@ -37,13 +37,13 @@ void main() {
       );
 
       // Act
-      final result = await client.sendMessage(input: 'Test input');
+      final result = await client.textPrompt(input: 'Test input');
 
       // Assert
       expect(result, isNull);
     });
 
-    test('sendMessage should return response data on success', () async {
+    test('textPrompt should return response data on success', () async {
       // Arrange
       final mockDio = Dio();
       final client = OpenAiClient(apiKey: 'test-key', dio: mockDio);
@@ -75,7 +75,88 @@ void main() {
       );
 
       // Act
-      final result = await client.sendMessage(input: 'Hello');
+      final result = await client.textPrompt(input: 'Hello');
+
+      // Assert
+      expect(result, isNotNull);
+      final resultJson = json.decode(result!);
+      expect(resultJson, equals(responseData));
+    });
+  });
+
+  group('GeminiClient', () {
+    test('should initialize with correct configuration', () {
+      final client = GeminiClient(apiKey: 'test-key');
+
+      expect(client.apiKey, equals('test-key'));
+      expect(client.dio, isA<Dio>());
+      expect(client.dio!.options.baseUrl, equals('https://generativelanguage.googleapis.com/v1beta/models/'));
+      expect(client.dio!.options.headers['Content-Type'], equals('application/json'));
+    });
+
+    test('textPrompt should handle DioException', () async {
+      // Arrange
+      final mockDio = Dio();
+      final client = GeminiClient(apiKey: 'test-key', dio: mockDio);
+
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            // Simulate a network error
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                error: 'Network error',
+                type: DioExceptionType.connectionError,
+              ),
+            );
+          },
+        ),
+      );
+
+      // Act
+      final result = await client.textPrompt(input: 'Test input');
+
+      // Assert
+      expect(result, isNull);
+    });
+
+    test('textPrompt should return response data on success', () async {
+      // Arrange
+      final mockDio = Dio();
+      final client = GeminiClient(apiKey: 'test-key', dio: mockDio);
+
+      final responseData = {
+        'candidates': [
+          {
+            'content': {
+              'parts': [
+                {
+                  'text': 'Hello there!'
+                }
+              ]
+            }
+          }
+        ]
+      };
+
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            // Return a successful response
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                data: responseData,
+                statusCode: 200,
+              ),
+            );
+          },
+        ),
+      );
+
+      // Act
+      final result = await client.textPrompt(input: 'Hello');
 
       // Assert
       expect(result, isNotNull);
