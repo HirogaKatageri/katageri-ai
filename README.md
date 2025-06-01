@@ -1,14 +1,26 @@
-# Sparrow Clients
+# Katageri AI (ˈkætəˌɡɔri aɪ)
 
-A Dart library that provides clients for interacting with AI services. Currently supports Google's Gemini AI with planned support for OpenAI.
+A Dart library that provides clients for interacting with AI services. Currently, supports Google's Gemini AI with planned support for OpenAI.
 
-## Features
+## Current Features
 
-- Simple, unified API for interacting with different AI services
-- Support for text prompts with Google's Gemini AI
-- Customizable model selection
-- Optional instruction parameters
-- Response parsing into strongly-typed objects
+- **Unified API**: Simple, consistent interface for interacting with different AI services
+- **Gemini AI Support**: Support for Google's Gemini AI service
+  - Text prompts with customizable model selection (default: gemini-2.0-flash)
+  - System instructions for guiding AI responses
+- **Conversation Management**: Stateful conversations with memory of previous interactions
+- **Memory System**: Store and retrieve conversation history
+- **Type-Safe Responses**: Response parsing into strongly typed objects
+
+## Upcoming Features
+
+- **Agents**: Creation and definition of Agents.
+- **OpenAI Support**: Integration with OpenAI's API (implementation in progress)
+  - Support for GPT models (planned default: gpt-4.1-nano)
+  - Compatible with the same unified API as Gemini
+- **Enhanced Memory Management**: Additional features for managing conversation history
+- **More AI Services**: Plans to support additional AI service providers
+- **Model Context Protocol**: Plans to support Model Context Protocols 
 
 ## Installation
 
@@ -16,61 +28,68 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  sparrow_clients: ^0.0.1
+  katageri_ai: ^0.0.1
 ```
 
-Then run:
+## Usage Guide
 
-```bash
-dart pub get
-```
-
-## Usage
-
-### Gemini Client
+### Basic Usage with Gemini AI
 
 ```dart
 import 'package:katageri_ai/katageri_ai.dart';
 
 void main() async {
-  // Create a client with your API key
-  final client = GeminiClient(apiKey: 'YOUR_GEMINI_API_KEY');
+  // Create an HTTP client for Gemini
+  final httpClient = SparrowHttpClient.gemini();
+
+  // Create a Gemini client with your API key
+  final geminiClient = GeminiClient(
+    apiKey: 'YOUR_GEMINI_API_KEY',
+    client: httpClient,
+  );
 
   // Send a text prompt
-  final GeminiResponse response = await client.textPrompt(
+  final ModelResponse response = await geminiClient.sendPrompt(
     input: 'Tell me about Dart programming',
     // Optional: specify a different model
-    // model: 'gemini-1.5-pro',
+    // model: 'gemini-2.0-pro',
     // Optional: add system instructions
     // instructions: 'Be concise and focus on recent developments',
   );
 
   // Process the response
-  print(response.candidates?.firstOrNull?.content?.parts?.firstOrNull?.text);
+  print(response.output);
 }
 ```
 
-## API Reference
+### Stateful Conversations
 
-### BaseAiClient
+```dart
+import 'package:katageri_ai/katageri_ai.dart';
 
-Abstract base class for all AI clients.
+void main() async {
+  final httpClient = SparrowHttpClient.gemini();
+  final geminiClient = GeminiClient(
+    apiKey: 'YOUR_GEMINI_API_KEY',
+    client: httpClient,
+  );
 
-### GeminiClient
+  // Create a stateful conversation
+  final conversation = StatefulConversation(client: geminiClient);
 
-Client for Google's Gemini AI service.
+  // Send the first message
+  final response1 = await conversation.send(
+    input: 'What is Dart?',
+  );
+  print(response1.output);
 
-#### Constructor
-
+  // Send a follow-up message (the conversation history is automatically included)
+  final response2 = await conversation.send(
+    input: 'What are its main features?',
+  );
+  print(response2.output);
+}
 ```
-GeminiClient({required String apiKey, SparrowHttpClient? client})
-```
-
-#### Methods
-
-- `Future<GeminiResponse> textPrompt({required String input, String model, String? instructions})`
-
-  Sends a text prompt to the Gemini AI service and returns the response.
 
 ## License
 
