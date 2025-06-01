@@ -7,9 +7,11 @@ class GeminiPrompt extends Prompt {
     required super.stream,
     required this.apiKey,
     super.instructions,
+    this.generateImage = false,
   });
 
   final String apiKey;
+  final bool generateImage;
 
   @override
   Future<Response> invoke(SparrowHttpClient client) => client.post(
@@ -28,7 +30,11 @@ class GeminiPrompt extends Prompt {
           ],
         },
       ],
+      if (generateImage)
+        'generationConfig': {
+          'responseModalities': ['TEXT', 'IMAGE'],
+        },
     },
-    queryParams: {'key': apiKey, if (stream) 'alt': 'sse'},
+    queryParams: {'key': apiKey, if (stream && !generateImage) 'alt': 'sse'},
   );
 }
