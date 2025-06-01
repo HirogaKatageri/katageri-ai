@@ -2,6 +2,8 @@
 
 A Dart library that provides clients for interacting with AI services. Currently, supports Google's Gemini AI with planned support for OpenAI.
 
+Note: Currently "not yet" published in pub.dev
+
 ## Current Features
 
 - **Unified API**: Simple, consistent interface for interacting with different AI services
