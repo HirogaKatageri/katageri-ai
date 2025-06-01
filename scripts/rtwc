@@ -1,0 +1,44 @@
+#!/bin/bash
+# This script automates Dart test execution with coverage reporting by:
+# 1. Running specified tests and collecting coverage data
+# 2. Converting raw coverage data to LCOV format
+# 3. Generating an HTML coverage report
+# 4. Opening the report in your default browser
+#
+# Prerequisites:
+# - Dart SDK installed
+# - FVM (Flutter Version Management) installed
+# - LCOV tools installed for HTML report generation
+#
+# Usage: 
+#   ./rtwc <test_directory> <source_files_pattern>
+#
+# Arguments:
+#   test_directory: Directory containing test files to run (e.g., test/)
+#   source_files_pattern: Pattern to match source files for coverage analysis
+#                        (e.g., lib/ or packages/**/lib/)
+#
+# Examples:
+#   ./rtwc test/ lib/                           # Run all tests in test/ directory
+#   ./rtwc test/unit/ packages/**/lib/          # Run unit tests with workspace coverage
+
+# Run tests with coverage collection
+# Saves raw coverage data to ./coverage directory
+directory=$1
+report_on=$2
+
+fvm dart test "$directory" --coverage=./coverage
+
+# Format coverage data into LCOV format
+# --report-on: Only include files matching this pattern
+# --packages: Specify the package configuration file
+# --lcov: Output in LCOV format
+fvm dart run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on="$report_on" --lcov -o ./coverage/lcov.info -i ./coverage
+
+lcov --remove ./coverage/lcov.info '*.freezed.dart' '*.g.dart' -o ./coverage/lcov.info
+
+# Generate HTML report from LCOV data
+genhtml -o ./coverage/report ./coverage/lcov.info
+
+# Open the coverage report in default browser
+open ./coverage/report/index.html

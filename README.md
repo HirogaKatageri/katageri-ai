@@ -30,7 +30,7 @@ dart pub get
 ### Gemini Client
 
 ```dart
-import 'package:sparrow_clients/sparrow-clients.dart';
+import 'package:katageri_ai/katageri_ai.dart';
 
 void main() async {
   // Create a client with your API key

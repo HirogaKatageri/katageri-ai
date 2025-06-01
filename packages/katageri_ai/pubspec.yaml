@@ -1,0 +1,53 @@
+name: katageri_ai
+description: AI Client & AI Agent Framework
+version: 0.0.1
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.8.0
+
+resolution: workspace
+
+# Add regular dependencies here.
+dependencies:
+  freezed_annotation:
+  http:
+  json_annotation:
+  uuid:
+
+dev_dependencies:
+  build_runner:
+  coverage:
+  freezed:
+  index_generator:
+  json_serializable:
+  lints:
+  mockito:
+  test:
+
+index_generator:
+  exclude:
+    - '**.freezed.dart'
+    - '**.g.dart'
+    - '**.part.dart'
+  libraries:
+    - directory_path: lib/src/clients
+      file_name: clients
+      comments: |
+        Copyright (c) 2025 Gian Patrick Quintana
+    - directory_path: lib/src/data
+      file_name: models
+      comments: |
+        Copyright (c) 2025 Gian Patrick Quintana
+    - directory_path: lib/src/prompts
+      file_name: prompts
+      comments: |
+        Copyright (c) 2025 Gian Patrick Quintana
+    - directory_path: lib/src/utils
+      file_name: utils
+      comments: |
+        Copyright (c) 2025 Gian Patrick Quintana
+    - directory_path: lib
+      file_name: 'katageri_ai'
+      comments: |
+        Copyright (c) 2025 Gian Patrick Quintana

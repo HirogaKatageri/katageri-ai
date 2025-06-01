@@ -1,0 +1,27 @@
+name: _
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+workspace:
+  - app
+  - packages/katageri_ai
+
+dependencies:
+  dev: ^1.0.0
+  freezed_annotation: ^3.0.0
+  http: ^1.4.0
+  json_annotation: ^4.9.0
+  katageri_ai: ^0.0.1
+  uuid: ^4.5.1
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  coverage: ^1.14.0
+  freezed: ^3.0.6
+  index_generator: ^4.0.1
+  json_serializable: ^6.9.5
+  lints: ^6.0.0
+  mockito: ^5.4.4
+  test: ^1.24.0
