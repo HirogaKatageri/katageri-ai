@@ -1,5 +1,5 @@
-import 'package:app/output/output.dart';
-
+import 'package:katageri_ai/katageri_ai.dart';
+import '../output/output.dart';
 import 'commands.dart';
 
 abstract base class InputStrategy {
@@ -9,10 +9,20 @@ abstract base class InputStrategy {
 }
 
 final class TextInput implements InputStrategy {
+  TextInput({required this.geminiClient});
+  
+  final GeminiClient geminiClient;
+
   @override
   Future<Output?> process(String input) async {
-
-    return MessageOutput(message: input.trim());
+    try {
+      final response = await geminiClient.sendPrompt(input: input.trim());
+      
+      final message = response.output ?? 'No response from Gemini';
+      return MessageOutput(message: message);
+    } catch (e) {
+      return MessageOutput(message: 'Error communicating with Gemini: $e');
+    }
   }
 }
 

@@ -46,6 +46,11 @@ class GeminiPrompt extends Prompt {
             ],
           },
         ],
+        'generationConfig': {
+          'responseModalities': model.contains('image-generation') 
+              ? ['TEXT', 'IMAGE'] 
+              : ['TEXT'],
+        },
       },
       queryParams: {'key': apiKey, if (stream) 'alt': 'sse'},
     );

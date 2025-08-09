@@ -55,10 +55,20 @@ Map<String, dynamic> _$ContentDataToJson(_ContentData instance) =>
     <String, dynamic>{'parts': instance.parts, 'role': instance.role};
 
 _ContentPartData _$ContentPartDataFromJson(Map<String, dynamic> json) =>
-    _ContentPartData(text: json['text'] as String?);
+    _ContentPartData(
+      text: json['text'] as String?,
+      fileData: (json['fileData'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ),
+      inlineData: json['inlineData'] as Map<String, dynamic>?,
+    );
 
 Map<String, dynamic> _$ContentPartDataToJson(_ContentPartData instance) =>
-    <String, dynamic>{'text': instance.text};
+    <String, dynamic>{
+      'text': instance.text,
+      'fileData': instance.fileData,
+      'inlineData': instance.inlineData,
+    };
 
 _UsageMetaData _$UsageMetaDataFromJson(
   Map<String, dynamic> json,

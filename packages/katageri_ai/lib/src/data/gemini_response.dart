@@ -17,18 +17,25 @@ abstract class GeminiResponse with _$GeminiResponse {
 }
 
 extension GeminiResponseExt on GeminiResponse {
-  String? get text => candidates
-      ?.firstWhere(
-        (element) => element.content?.role == 'model',
-        orElse: () => CandidateData(),
-      )
-      .content
-      ?.parts
-      ?.firstWhere(
-        (element) => element.text != null,
-        orElse: () => ContentPartData(text: ''),
-      )
-      .text;
+  String? get text {
+    if (candidates == null || candidates!.isEmpty) {
+      return null;
+    }
+    final modelCandidate = candidates!.firstWhere(
+      (element) => element.content?.role == 'model',
+      orElse: () => CandidateData(),
+    );
+    if (modelCandidate.content?.parts == null ||
+        modelCandidate.content!.parts!.isEmpty) {
+      return null;
+    }
+    return modelCandidate.content!.parts!
+        .firstWhere(
+          (element) => element.text != null,
+          orElse: () => ContentPartData(text: ''),
+        )
+        .text;
+  }
 }
 
 @freezed
@@ -54,7 +61,11 @@ abstract class ContentData with _$ContentData {
 
 @freezed
 abstract class ContentPartData with _$ContentPartData {
-  const factory ContentPartData({String? text}) = _ContentPartData;
+  const factory ContentPartData({
+    String? text,
+    Map<String, String>? fileData,
+    Map<String, dynamic>? inlineData,
+  }) = _ContentPartData;
 
   factory ContentPartData.fromJson(Map<String, dynamic> json) =>
       _$ContentPartDataFromJson(json);
