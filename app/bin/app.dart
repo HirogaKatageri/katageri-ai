@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app/lib.dart';
+import 'package:katageri_ai/katageri_ai.dart';
 
 void main(List<String> arguments) async {
   // Display welcome message
@@ -9,12 +10,18 @@ void main(List<String> arguments) async {
   print('Type /help for available commands.');
   print('Any other input will be processed as text.');
 
+  // Create Gemini client
+  final geminiClient = GeminiClient(
+    apiKey: '', // TODO: Add your API key here
+    client: SparrowHttpClient.gemini(),
+  );
+
   // Create input processor with strategies
   // Order matters - first matching strategy will be used
   final inputProcessor = InputProcessor([
     HelpCommand(),
     ExitCommand(),
-    TextInput(),
+    TextInput(geminiClient: geminiClient),
   ]);
 
   // Continue running until user types /exit
